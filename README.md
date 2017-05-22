@@ -1,4 +1,4 @@
-# bing wallpaper
+# Bing-Wallpaper for Nodejs
 
 ### 自动执行配置 crontab
 

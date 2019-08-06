@@ -1,4 +1,4 @@
-# Bing-Wallpaper for Nodejs
+# Bing-Wallpaper for Python3
 
 ## 使用说明
 

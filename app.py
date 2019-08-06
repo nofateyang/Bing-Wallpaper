@@ -2,6 +2,7 @@
 [summary]
 """
 import os
+import platform
 import requests
 from urllib import parse
 
@@ -17,6 +18,12 @@ root = 'http://www.bing.com'
 url = 'http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1'
 
 local_root = '/Users/ayang/Wallpapers'
+if platform.system().lower() == 'windows':
+    local_root = os.environ['HOMEPATH'] + '/Wallpapers'
+else:
+    local_root = os.environ['HOME'] + '/Wallpapers'
+
+
 log_file = local_root + '/bing-wallpaper.log'
 
 def debug_print(message):
@@ -50,9 +57,14 @@ def write_log(string):
     
 
 def notify(filename, title):
-    cmd = "osascript -e 'display notification \"" + filename + "\r\n" +  title + "\" with title \"Bing-Wallpaper "  + "\" sound name \"Glass.aiff\" '"    
+    cmd = None
+    if platform.system().lower() == 'darwin':
+        cmd = "osascript -e 'display notification \"" + filename + "\r\n" +  title + "\" with title \"Bing-Wallpaper "  + "\" sound name \"Glass.aiff\" '"    
+    else:
+        cmd = None
     # debug_print(cmd)
-    execute_command(cmd)
+    if cmd is not None:
+        execute_command(cmd)
     return 0
 
 

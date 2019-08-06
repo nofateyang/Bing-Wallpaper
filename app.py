@@ -69,7 +69,6 @@ def notify(filename, title):
 
 
 def fetch():
-    url = 'http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1'
     # request = Request(headers=headers)
     resp = requests.get(url, headers=headers)
     if resp.status_code != 200:

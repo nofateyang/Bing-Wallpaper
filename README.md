@@ -10,7 +10,7 @@ mac
 crontab -e
 
 min hour mday month wday command  
-* */4 * * * /usr/local/bin/node ~/path/to/bing-wallpaper/app.py
+* */4 * * * /usr/local/bin/python3 ~/path/to/bing-wallpaper/app.py
 
 ## 遗留问题
 * com.apple.desktop.admin.png 更改失败，暂不能自动替换mac的登录背景。

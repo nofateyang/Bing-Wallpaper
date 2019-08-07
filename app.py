@@ -82,7 +82,7 @@ def fetch():
         image_url = parse.unquote(image.url)
         parsed_tuple = parse.urlparse(image_url)        
         query_dict = edict(parse.parse_qs(parsed_tuple.query))
-        filename = image.startdate + '-' + query_dict.rf[0]
+        filename = image.startdate + '.jpg' # + query_dict.rf[0]
         # debug_print(filename)
         if not os.path.exists(local_root + '/' + filename):
             resp = requests.get(root + image.url)

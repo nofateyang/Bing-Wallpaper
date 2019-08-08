@@ -1,6 +1,7 @@
 """
 [summary]
 """
+
 import os
 import platform
 import requests
@@ -8,6 +9,8 @@ from urllib import parse
 
 from easydict import EasyDict as edict
 # from hobee import RequestX as Request
+
+from PIL import Image, ImageFont, ImageDraw
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,/;q=0.8;',
@@ -26,8 +29,10 @@ else:
 
 log_file = local_root + '/bing-wallpaper.log'
 
+
 def debug_print(message):
     return print(message, flush=True)
+
 
 def execute_command(cmd, newshell=True):
     import subprocess
@@ -41,6 +46,7 @@ def execute_command(cmd, newshell=True):
         return p.returncode, stderr
     return p.returncode, stdout
 
+
 def write_log(string):
     data = ''
     if os.path.exists(log_file):
@@ -52,14 +58,15 @@ def write_log(string):
         f.write(data)
         f.flush()
         f.close()
-        
+
     return 0
-    
+
 
 def notify(filename, title):
     cmd = None
     if platform.system().lower() == 'darwin':
-        cmd = "osascript -e 'display notification \"" + filename + "\r\n" +  title + "\" with title \"Bing-Wallpaper "  + "\" sound name \"Glass.aiff\" '"    
+        cmd = "osascript -e 'display notification \"" + filename + "\r\n" + title + \
+            "\" with title \"Bing-Wallpaper " + "\" sound name \"Glass.aiff\" '"
     else:
         cmd = None
     # debug_print(cmd)
@@ -68,38 +75,60 @@ def notify(filename, title):
     return 0
 
 
+def draw_text_info_to_image(image_file_name, image_info):
+    font = ImageFont.truetype("font/SourceHanSansSC-Regular.otf", 48)
+
+    im = Image.open(image_file_name)
+    print(im.format, im.size, im.mode)
+
+    x = 40
+    y = im.size[1] - 240
+    text_info = image_info.copyright.split('，')
+    
+    draw = ImageDraw.Draw(im)
+    for index, text in enumerate(text_info):
+        # debug_print(text)
+        draw.text((x, y + index * 60), text, fill=(255, 255, 255),  font=font)
+        
+    im.save(image_file_name)
+
+    return 0
+
+
 def fetch():
     # request = Request(headers=headers)
     resp = requests.get(url, headers=headers)
     if resp.status_code != 200:
         return -1
-    
+
     # debug_print(resp.json())
     result = edict(resp.json())
-    # print(resp.json, flush=False)
-    
+    # debug_print(result)
+
     for image in result.images:
         image_url = parse.unquote(image.url)
-        parsed_tuple = parse.urlparse(image_url)        
+        parsed_tuple = parse.urlparse(image_url)
         query_dict = edict(parse.parse_qs(parsed_tuple.query))
-        filename = image.startdate + '.jpg' # + query_dict.rf[0]
+        filename = image.startdate + '.jpg'  # + query_dict.rf[0]
+        l_filename = local_root + '/' + filename
         # debug_print(filename)
-        if not os.path.exists(local_root + '/' + filename):
+        if not os.path.exists(l_filename):
             resp = requests.get(root + image.url)
             if resp.status_code == 200:
-                with open(local_root + '/' + filename, 'wb') as f:
+                with open(l_filename, 'wb') as f:
                     f.write(resp.content)
                     f.flush()
                     f.close()
                 logs = '\r\n'.join([filename, root + image.url, image.copyright])
                 debug_print(logs)
                 write_log(logs)
+                draw_text_info_to_image(l_filename, image)
                 notify(filename, image.copyright)
             else:
                 pass
         else:
             pass
-        
+
     return 0
 
 
@@ -107,5 +136,8 @@ def do_action(argsDict=None):
     fetch()
     pass
 
+
 if __name__ == "__main__":
     do_action()
+
+# end

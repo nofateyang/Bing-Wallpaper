@@ -1,2 +1,5 @@
 requests
 edict
+Pillow
+BeautifulSoup
+pync

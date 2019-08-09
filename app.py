@@ -1,8 +1,10 @@
 """
 [summary]
+https://github.com/julienXX/terminal-notifier
 """
 
 import os
+import json
 import platform
 import requests
 import textwrap
@@ -10,6 +12,8 @@ import textwrap
 from urllib import parse
 from bs4 import BeautifulSoup
 from easydict import EasyDict as edict
+from pync import Notifier
+
 
 # from hobee import RequestX as Request
 
@@ -38,6 +42,20 @@ log_file = local_root + '/bing-wallpaper.txt'
 def debug_print(message):
     return print(message, flush=True)
 
+def read_file_all_text(filename, mode='r'):
+    if os.path.exists(filename):
+        with open(filename, mode, encoding='utf-8') as f:
+            data = f.read()
+            f.close()
+            return data
+    return None
+
+def write_file(filename, data, mode='w'):
+    with open(filename, mode, encoding='utf-8') as f:
+        f.write(data)
+        f.flush()
+        f.close()
+    return True
 
 def execute_command(cmd, newshell=True):
     import subprocess
@@ -153,7 +171,7 @@ def draw_text_info_to_image(image_file_name, image_info):
     return 0
 
 
-def fetch():
+def fetch_pic():
     # request = Request(headers=headers)
     resp = requests.get(url, headers=headers)
     if resp.status_code != 200:
@@ -183,11 +201,11 @@ def fetch():
                     f.flush()
                     f.close()
                 draw_text_info_to_image(l_filename, image)
-                notify(filename, image.copyright)
+                Notifier.notify(image.copyright, title=filename, subtitle='Bing-Wallpaper',sound='default')
                 
                 log_text = '\r\n'.join(logs)
                 write_log(log_text)
-
+                
             else:
                 pass
         else:
@@ -197,9 +215,46 @@ def fetch():
     # debug_print(log_text)
     return 0
 
+def get_news():
+    from lxml import etree
+    history = {}
+    data =  read_file_all_text(local_root + '/news.history')
+    if data is not None and len(data) > 0:
+        history = json.loads(data)
+    
+    
+    try:
+        root = 'http://www.dapenti.com/blog/'
+        url = 'http://www.dapenti.com/blog/blog.asp?subjectid=70&name=xilei'
+        resp = requests.get(url, headers=headers)
+        if resp.status_code == 200 and len(resp.content) > 0:
+            resp.encoding = 'GBK'
+            # result = resp.content.decode('utf-8')
+            result = resp.text
+            html = etree.HTML(result)
+            # soup = BeautifulSoup(result, "html.parser")
+            # result = soup.select('body > table > tbody > tr > td.oblog_t_2 > div > div:nth-child(7) > ul > li:nth-child(1)')
+            first = html.xpath('/html/body/table/tbody/tr/td[1]/div/div[1]/ul/li[1]/a')
+            u = root +  first[0].xpath('@href')[0]
+            # debug_print(u)
+            t = first[0].xpath('text()')[0]
+            # debug_print(t)
+            
+            if u not in history.keys():
+                history[u] = t
+                cmd = "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --new-window '%s'" % u
+                # Notifier.notify(t, title='铂程斋', subtitle=u, open=u, sound='default')
+                Notifier.notify(t, title='铂程斋', subtitle=u, execute=cmd, sound='default')
+                write_file(local_root + '/news.history', json.dumps(history, ensure_ascii=False, indent=4))
+    except Exception as e:
+        debug_print(repr(e))
+        
+    return 0
+
 
 def do_action(argsDict=None):
-    fetch()
+    fetch_pic()
+    get_news()
     pass
 
 

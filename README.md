@@ -5,6 +5,13 @@
 * 该脚本缺省将图片下载到当前用户/Users/xxx/Wallpapers中，可在config.js中进行修改。
 * 在桌面背景设置里指向该文件夹，并允许自动更换，如每5分钟一次等。
 
+##
+每日一言 http://guozhivip.com/nav/api/api.php
+每日一句 http://guozhivip.com/
+
+
+https://github.com/julienXX/terminal-notifier
+
 ## 自动执行配置 crontab
 mac
 crontab -e

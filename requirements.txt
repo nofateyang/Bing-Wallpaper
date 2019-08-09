@@ -3,3 +3,4 @@ edict
 Pillow
 BeautifulSoup
 pync
+lxml

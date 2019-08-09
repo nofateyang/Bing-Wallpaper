@@ -11,6 +11,7 @@
 
 
 https://github.com/julienXX/terminal-notifier
+https://github.com/vjeantet/alerter
 
 ## 自动执行配置 crontab
 mac

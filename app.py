@@ -110,7 +110,7 @@ def draw_text_info_to_image(image_file_name, image_info):
         result = result.replace('document.write("', '').replace('");', '') 
         if len(result) > 0:
             words.append(result) 
-    
+    words.append('placeholder')
     # 每日一句
     url = 'http://guozhivip.com/'
     resp = requests.get(url, headers=headers)
@@ -145,7 +145,7 @@ def draw_text_info_to_image(image_file_name, image_info):
    
     draw = ImageDraw.Draw(im) 
    
-    y = ih - 350
+    y = ih - 360
     t_height = 0
     font = ImageFont.truetype("font/SourceHanSansSC-Regular.otf", 24)
     for index,text in enumerate(words):
@@ -154,13 +154,16 @@ def draw_text_info_to_image(image_file_name, image_info):
     
     w_h = t_height / len(words) 
     for index,text in enumerate(words):
-        y = y + w_h + 0
-        debug_print(text + ' %d, %d ' % (w, h))
-        draw.text((x, y), text, fill=(255, 255, 255),  font=font)
+        if text=='placeholder':
+            y = y + 10
+        else:
+            y = y + w_h + 2
+            debug_print(text + ' %d, %d ' % (w, h))
+            draw.text((x, y), text, fill=(255, 255, 255),  font=font)
     
-    y = y + 10
+    y = y + 13
     text_info = image_info.copyright.split('，')
-    font = ImageFont.truetype("font/SourceHanSansSC-Regular.otf", 30)
+    font = ImageFont.truetype("font/SourceHanSansSC-Regular.otf", 32)
     for index, text in enumerate(text_info):
         w, h = font.getsize(text)
         debug_print(text + ' %d, %d ' % (w, h))

@@ -22,6 +22,7 @@ from PIL import Image, ImageFont, ImageDraw
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,/;q=0.8;',
+    # 'Accept-Language': 'en-us',
     "User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.87 Safari/537.36'
 }
 
@@ -84,6 +85,12 @@ def write_log(string):
 
     return 0
 
+def get_notify_group_id():
+    import time
+    import random
+    
+    id = 'HB.Py-' + time.strftime("%Y%m%d%H%M%S", time.localtime()) + '.' + str(os.getpid()) + '.' + str(random.random())
+    return id
 
 def notify(filename, title):
     cmd = None
@@ -204,7 +211,8 @@ def fetch_pic():
                     f.flush()
                     f.close()
                 draw_text_info_to_image(l_filename, image)
-                Notifier.notify(image.copyright, title=filename, subtitle='Bing-Wallpaper',sound='default')
+                cmd = 'open %s' % l_filename
+                Notifier.notify(image.copyright, title=filename, subtitle='Bing-Wallpaper', execute=cmd, group=get_notify_group_id(), sound='default')
                 
                 log_text = '\r\n'.join(logs)
                 write_log(log_text)
@@ -247,7 +255,7 @@ def get_news():
                 history[u] = t
                 cmd = "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --new-window '%s'" % u
                 # Notifier.notify(t, title='铂程斋', subtitle=u, open=u, sound='default')
-                Notifier.notify(t, title='铂程斋', subtitle=u, execute=cmd, sound='default')
+                Notifier.notify(t, title='铂程斋', subtitle=u, execute=cmd, group=get_notify_group_id(), sound='default')
                 write_file(local_root + '/news.history', json.dumps(history, ensure_ascii=False, indent=4))
     except Exception as e:
         debug_print(repr(e))

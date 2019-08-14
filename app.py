@@ -40,6 +40,8 @@ logs = []
 log_file = local_root + '/bing-wallpaper.txt'
 
 
+TEXT_PLACEHOLDER = 'placeholder'
+
 def debug_print(message):
     return print(message, flush=True)
 
@@ -71,13 +73,16 @@ def execute_command(cmd, newshell=True):
     return p.returncode, stdout
 
 
-def write_log(string):
+def write_log(logs):
+    logs.remove(TEXT_PLACEHOLDER)
+    log_text = '\r\n'.join(logs)
+    
     data = ''
     if os.path.exists(log_file):
         with open(log_file, 'r', encoding='utf-8') as f:
             data = f.read()
             f.close()
-    data = string + '\r\n' + '\r\n' + data
+    data = log_text + '\r\n' + '\r\n' + data
     with open(log_file, 'w', encoding='utf-8') as f:
         f.write(data)
         f.flush()
@@ -117,30 +122,22 @@ def draw_text_info_to_image(image_file_name, image_info):
         result = result.replace('document.write("', '').replace('");', '') 
         if len(result) > 0:
             words.append(result) 
-    words.append('placeholder')
-    # 每日一句
-    url = 'http://guozhivip.com/'
+    words.append(TEXT_PLACEHOLDER)
+    
+    # 金山词霸每日一句 每日一句
+    url = 'http://open.iciba.com/dsapi/'
     resp = requests.get(url, headers=headers)
     if resp.status_code == 200 and len(resp.content) > 0:
-        result = resp.content.decode('utf-8')
-        # debug_print(result)
-        soup = BeautifulSoup(result, "html.parser")
-        result = soup.select('body > div.contents > section.com.one > div.sub.content > ul > li.words > h3')
-        if result is not None and len(result) > 0:
-            # debug_print(str(result[0]))
-            result = str(result[0]).replace('<h3>', '').replace('</h3>', '') # 这里没有办法，因为需要用到<br/>来分行
-            results = result.split('<br/>')
-            for text in results:
-                words.append(text.strip())
-            
-        result = soup.select('body > div.contents > section.com.one > div.sub.content > ul > li.words > p')
-        if result is not None and len(result) > 0:
-            result = result[0].text.replace('果汁小编：', '')
-            words.append(result)
-            # debug_print(result)
+        # result = resp.content.decode('utf-8')
+        debug_print(resp.text)
+        result = edict(resp.json())
+        words.append(result.content)
+        words.append(result.note)
+        words.append(result.translation.replace('小编的话：', ''))
+       
     
     logs.extend(words)
-    debug_print('======================================')
+    # debug_print('======================================')
     
     im = Image.open(image_file_name)
     print(im.format, im.size, im.mode)
@@ -161,7 +158,7 @@ def draw_text_info_to_image(image_file_name, image_info):
     
     w_h = t_height / len(words) 
     for index,text in enumerate(words):
-        if text=='placeholder':
+        if text == TEXT_PLACEHOLDER:
             y = y + 10
         else:
             y = y + w_h + 2
@@ -214,8 +211,8 @@ def fetch_pic():
                 cmd = 'open %s' % l_filename
                 Notifier.notify(image.copyright, title=filename, subtitle='Bing-Wallpaper', execute=cmd, group=get_notify_group_id(), sound='default')
                 
-                log_text = '\r\n'.join(logs)
-                write_log(log_text)
+               
+                write_log(logs)
                 
             else:
                 pass
@@ -232,7 +229,6 @@ def get_news():
     data =  read_file_all_text(local_root + '/news.history')
     if data is not None and len(data) > 0:
         history = json.loads(data)
-    
     
     try:
         root = 'http://www.dapenti.com/blog/'
@@ -252,7 +248,7 @@ def get_news():
             # debug_print(t)
             
             if u not in history.keys():
-                history[u] = t
+                history[u] = t.strip()
                 cmd = "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --new-window '%s'" % u
                 # Notifier.notify(t, title='铂程斋', subtitle=u, open=u, sound='default')
                 Notifier.notify(t, title='铂程斋', subtitle=u, execute=cmd, group=get_notify_group_id(), sound='default')
